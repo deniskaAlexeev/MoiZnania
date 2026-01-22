@@ -1,11 +1,4 @@
 // ==========================================
-// ИНИЦИАЛИЗАЦИЯ EMAILJS
-// ==========================================
-(function() {
-    emailjs.init('8TNFT86Ft_mIyFCqn'); // Ваш Public Key из EmailJS
-})();
-
-// ==========================================
 // MOBILE MENU TOGGLE
 // ==========================================
 const mobileMenuBtn = document.getElementById('mobileMenuBtn');
@@ -242,6 +235,14 @@ if (contactForm) {
     contactForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
+        // Проверяем, загружен ли EmailJS
+        if (typeof emailjs === 'undefined') {
+            console.error('EmailJS не загружен!');
+            formError.textContent = 'Ошибка загрузки сервиса отправки. Пожалуйста, перезагрузите страницу.';
+            formError.style.display = 'block';
+            return;
+        }
+        
         // Показываем состояние загрузки
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span class="spinner"></span> Отправка...';
@@ -262,7 +263,7 @@ if (contactForm) {
         
         try {
             // Отправляем через EmailJS
-            await emailjs.send(
+            const response = await emailjs.send(
                 'service_cfwdgft',  // Service ID
                 'template_9ll0koj', // Template ID
                 {
@@ -276,6 +277,8 @@ if (contactForm) {
                     to_email: 'sasun-saakyan@mail.ru'
                 }
             );
+            
+            console.log('Успешная отправка:', response);
             
             // Показываем сообщение об успехе
             formSuccess.style.display = 'flex';
@@ -432,9 +435,17 @@ const debouncedScroll = debounce(handleScroll, 10);
 window.addEventListener('scroll', debouncedScroll);
 
 // ==========================================
-// ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ
+// ИНИЦИАЛИЗАЦИЯ EMAILJS И ЗАГРУЗКА
 // ==========================================
 document.addEventListener('DOMContentLoaded', function() {
+    // ИНИЦИАЛИЗАЦИЯ EMAILJS - должна быть ПОСЛЕ загрузки библиотеки!
+    if (typeof emailjs !== 'undefined') {
+        emailjs.init('8TNFT86Ft_mIyFCqn'); // Ваш Public Key из EmailJS
+        console.log('✅ EmailJS инициализирован успешно!');
+    } else {
+        console.error('❌ EmailJS не загружен! Проверьте подключение библиотеки.');
+    }
+    
     // Запускаем проверку прокрутки
     handleScroll();
     revealOnScroll();
