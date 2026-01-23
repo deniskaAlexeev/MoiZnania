@@ -67,19 +67,56 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 // TESTIMONIALS SLIDER
 // ==========================================
 const testimonialSlides = document.querySelectorAll('.testimonial-slide');
-const testimonialDots = document.querySelectorAll('.testimonials-dots .dot');
+const testimonialsDotsContainer = document.getElementById('testimonialsDots');
 const prevBtn = document.getElementById('testimonialPrev');
 const nextBtn = document.getElementById('testimonialNext');
 let currentTestimonial = 0;
+let testimonialDots = [];
+
+// Динамически создаем точки навигации на основе количества слайдов
+function initTestimonialDots() {
+    if (testimonialsDotsContainer && testimonialSlides.length > 0) {
+        // Очищаем существующие точки
+        testimonialsDotsContainer.innerHTML = '';
+        testimonialDots = [];
+        
+        // Создаем точки для каждого слайда
+        testimonialSlides.forEach((slide, index) => {
+            const dot = document.createElement('button');
+            dot.className = 'dot';
+            if (index === 0) {
+                dot.classList.add('active');
+            }
+            dot.setAttribute('data-index', index);
+            dot.setAttribute('aria-label', `Перейти к отзыву ${index + 1}`);
+            testimonialsDotsContainer.appendChild(dot);
+            testimonialDots.push(dot);
+        });
+        
+        // Добавляем обработчики событий для точек
+        testimonialDots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                showTestimonial(index);
+            });
+        });
+    }
+}
 
 function showTestimonial(index) {
+    // Проверяем валидность индекса
+    if (index < 0 || index >= testimonialSlides.length) {
+        return;
+    }
+    
     // Убираем active у всех слайдов и точек
     testimonialSlides.forEach(slide => slide.classList.remove('active'));
     testimonialDots.forEach(dot => dot.classList.remove('active'));
     
     // Добавляем active нужным
     testimonialSlides[index].classList.add('active');
-    testimonialDots[index].classList.add('active');
+    if (testimonialDots[index]) {
+        testimonialDots[index].classList.add('active');
+    }
     currentTestimonial = index;
 }
 
@@ -95,12 +132,11 @@ if (prevBtn && nextBtn) {
     });
 }
 
-if (testimonialDots.length > 0) {
-    testimonialDots.forEach((dot, index) => {
-        dot.addEventListener('click', () => {
-            showTestimonial(index);
-        });
-    });
+// Инициализируем точки при загрузке DOM
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initTestimonialDots);
+} else {
+    initTestimonialDots();
 }
 
 // Автоматическая смена слайдов каждые 5 секунд
@@ -445,6 +481,9 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         console.error('❌ EmailJS не загружен! Проверьте подключение библиотеки.');
     }
+    
+    // Инициализируем точки навигации для отзывов
+    initTestimonialDots();
     
     // Запускаем проверку прокрутки
     handleScroll();
